@@ -1,7 +1,14 @@
 terraform {
+  # required_version = "1.11.3"
+  # required_version = 1.8
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
+      version = "0.8.3"
+    }
+    template = {
+      source  = "hashicorp/template"
+      version = "2.2.0"
     }
   }
 }
@@ -11,10 +18,10 @@ provider "libvirt" {
 }
 
 resource "libvirt_volume" "volumes" {
-  name    = "tf-jammy.${var.img_format}"
-  pool    = "default"
-  source  = var.img_source
-  format  = var.img_format
+  name   = "tf-jammy.${var.img_format}"
+  pool   = "default"
+  source = var.img_source
+  format = var.img_format
 }
 
 resource "libvirt_domain" "guest" {
@@ -33,7 +40,7 @@ resource "libvirt_domain" "guest" {
   cloudinit = libvirt_cloudinit_disk.commoninit.id
 
   network_interface {
-    network_name = "default"
+    network_name   = "default"
     wait_for_lease = true
   }
 
@@ -44,8 +51,8 @@ resource "libvirt_domain" "guest" {
   }
 
   graphics {
-    type      = "spice"
-    autoport  = true
+    type        = "spice"
+    autoport    = true
     listen_type = "address"
   }
 }
@@ -56,22 +63,22 @@ resource "libvirt_cloudinit_disk" "commoninit" {
 }
 
 data "template_file" "user_data_yaml" {
-    template = yamlencode({
+  template = yamlencode({
     users = [
       {
-        name = "k8s_user"
-        gecos = "k8s_user"
-        shell = "/bin/bash"
+        name          = "k8s_user"
+        gecos         = "k8s_user"
+        shell         = "/bin/bash"
         primary_group = "k8s"
-        groups = "users"
-        sudo = "ALL=(ALL) NOPASSWD:ALL"
-        lock_passwd = false 
+        groups        = "users, adm"
+        sudo          = "ALL=(ALL) NOPASSWD:ALL"
+        lock_passwd   = false
         ssh_authorized_keys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDX2gcunVOrLn5ULiht/FJo4xHjslWubSG7K5b5YFaF6",
         ]
       },
     ]
-    package_update = true
+    package_update  = true
     package_upgrade = true
     packages = [
       "ca-certificates",
