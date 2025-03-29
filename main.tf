@@ -1,14 +1,14 @@
 terraform {
-  # required_version = "1.11.3"
+  required_version = ">= 1.11"
   # required_version = 1.8
   required_providers {
     libvirt = {
-      source  = "dmacvicar/libvirt"
-      version = "0.8.3"
+      source  = "registry.opentofu.org/dmacvicar/libvirt"
+      version = "~> 0.8.3"
     }
     template = {
-      source  = "hashicorp/template"
-      version = "2.2.0"
+      source  = "registry.opentofu.org/hashicorp/template"
+      version = "~> 2.2.0"
     }
   }
 }
@@ -102,5 +102,5 @@ output "user_data" {
   value = data.template_file.user_data_yaml
 }
 output "ips" {
-  value = libvirt_domain.guest.*.network_interface.0.addresses
+  value = libvirt_domain.guest[*].network_interface[0].addresses
 }
