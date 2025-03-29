@@ -92,6 +92,10 @@ data "template_file" "user_data_yaml" {
 
 data "template_file" "user_data" {
   template = file("${path.module}/${var.cloud_init}.cfg")
+  vars = {
+    ansible_git_repo = var.ansible_git_repo
+    ansible_playbook = var.ansible_playbook
+  }
 }
 
 output "user_data" {
