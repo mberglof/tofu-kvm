@@ -1,0 +1,11 @@
+---
+- name: Initial Setup of Cloud Instance
+  hosts: localhost
+  tasks:
+    - name: Install some basic packages
+      ansible.builtin.package:
+        name:
+          - vim-enhanced
+          - bash-completion
+          - jq
+        state: latest
