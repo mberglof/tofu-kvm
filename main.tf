@@ -18,19 +18,34 @@ provider "libvirt" {
 }
 
 resource "libvirt_volume" "volumes" {
-  name   = "tf-jammy.${var.img_format}"
-  pool   = "default"
-  source = var.img_source
-  format = var.img_format
+  for_each = toset([for i in range(var.vm_count) : format("vm-%02d", i + 1)])
+  name     = "${each.key}.${var.img_format}"
+  pool     = "default"
+  source   = var.img_source_alma
+  format   = var.img_format
+}
+
+resource "libvirt_network" "tf_network" {
+  name      = "tf-network"
+  mode      = "nat"
+  autostart = "true"
+  addresses = [var.vm_network]
+  dhcp {
+    enabled = true
+  }
+  dns {
+    enabled = true
+  }
 }
 
 resource "libvirt_domain" "guest" {
-  name   = "tf-jammy"
-  memory = var.mem_size
-  vcpu   = var.cpu_cores
+  for_each = toset([for i in range(var.vm_count) : format("vm-%02d", i + 1)])
+  name     = each.key
+  memory   = var.mem_size
+  vcpu     = var.cpu_cores
 
   disk {
-    volume_id = libvirt_volume.volumes.id
+    volume_id = libvirt_volume.volumes[each.key].id
   }
 
   # disk {
@@ -40,7 +55,7 @@ resource "libvirt_domain" "guest" {
   cloudinit = libvirt_cloudinit_disk.commoninit.id
 
   network_interface {
-    network_name   = "default"
+    network_name   = libvirt_network.tf_network.name
     wait_for_lease = true
   }
 
@@ -98,9 +113,11 @@ data "template_file" "user_data" {
   }
 }
 
-output "user_data" {
-  value = data.template_file.user_data_yaml
-}
-output "ips" {
-  value = libvirt_domain.guest[*].network_interface[0].addresses
+output "node_info" {
+  value = {
+    for name, vm in libvirt_domain.guest : name => {
+      name       = vm.name
+      ip_address = vm.network_interface[0].addresses[0]
+    }
+  }
 }

@@ -10,6 +10,12 @@ variable "img_source" {
   type        = string
 }
 
+variable "img_source_alma" {
+  description = "Alma Linux 8 Cloud Image"
+  default     = "AlmaLinux-8-GenericCloud-latest.x86_64.qcow2"
+  type        = string
+}
+
 variable "img_format" {
   description = "QCow2 UEFI/GPT Bootable disk image"
   default     = "qcow2"
@@ -36,6 +42,18 @@ variable "ansible_playbook" {
 
 variable "ansible_git_repo" {
   description = "URL for cloud-init ansible module"
-  default     = "https://github.com/mberglof/terraform-kvm.git"
+  default     = "https://github.com/mberglof/tofu-kvm.git"
+  type        = string
+}
+
+variable "vm_count" {
+  description = "Number of virtual machines to create"
+  type        = number
+  default     = 1
+}
+
+variable "vm_network" {
+  description = "Managed by terraform, for terraformed virtual machines"
+  default     = "192.168.133.0/24"
   type        = string
 }
